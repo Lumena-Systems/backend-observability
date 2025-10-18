@@ -1,164 +1,234 @@
-# Observability Platform - Production Debugging Interview
+# Production Debugging Interview - Code Repository
 
-A web-based observability platform for debugging production issues in a coding interview setting. Candidates investigate two realistic scenarios using various debugging tools.
+This is a unified TypeScript codebase containing realistic production code with intentional bugs for debugging interview scenarios. Candidates will investigate observability data (metrics, traces, logs) and correlate findings with this code to identify root causes.
 
-## Features
+---
 
-- **Scenario 1: Webhook Retry Storm** - Debug exponential retry growth causing system overload
-- **Scenario 2: JSON Parsing Performance** - Identify performance bottlenecks in workflow execution
+## Repository Structure
 
-## Tools Included
+```
+interview-app/
+├── src/                          # Unified application codebase
+│   ├── lib/                      # Infrastructure layer
+│   │   ├── config.ts             # Configuration management
+│   │   ├── logger.ts             # Structured logging
+│   │   ├── metrics.ts            # Metrics collection
+│   │   ├── cache.ts              # Cache client
+│   │   ├── database/             # Database layer
+│   │   │   ├── client.ts         # DB connection pool
+│   │   │   ├── migrations.ts     # Schema migrations
+│   │   │   └── transactions.ts   # Transaction helpers
+│   │   └── external-apis/        # External service clients
+│   │       ├── validation-service.ts
+│   │       ├── payment-gateway.ts
+│   │       └── email-provider.ts
+│   │
+│   ├── types/                    # TypeScript type definitions
+│   │   ├── api.ts                # API request/response types
+│   │   ├── job.ts                # Background job types
+│   │   ├── workflow.ts           # Workflow types
+│   │   └── user.ts               # User types
+│   │
+│   ├── api/                      # REST API server
+│   │   ├── server.ts             # Express server setup
+│   │   ├── middleware/           # API middleware
+│   │   │   ├── auth.ts
+│   │   │   ├── validation.ts
+│   │   │   ├── error-handler.ts
+│   │   │   └── request-logging.ts
+│   │   └── routes/               # API endpoints
+│   │       ├── health.ts
+│   │       ├── workflows/        # Workflow endpoints
+│   │       ├── users/            # User management
+│   │       ├── data/             # Data operations
+│   │       └── reports/          # Report generation
+│   │
+│   └── services/                 # Backend services
+│       ├── job-scheduler/        # Background job scheduling ⚠️
+│       ├── workflow-engine/      # Workflow execution
+│       ├── workflow-service/     # Workflow operations
+│       ├── notification-service/ # Email/webhook notifications
+│       ├── user-service/         # User management
+│       └── data-service/         # Data import/export
+│
+├── docs/
+│   └── INTERVIEW_GUIDE.md        # For interviewers only
+├── package.json
+├── tsconfig.json
+└── README.md                     # This file
+```
 
-- 📊 **Metrics Dashboard** - Time-series charts for system metrics
-- 🔍 **Distributed Traces** - Request flow visualization with flame graphs
-- 📝 **Logs Explorer** - Structured log search and filtering
-- 💾 **Database Analyzer** - Query performance and lock analysis
-- 🧠 **Memory Profiler** - Heap dumps and GC metrics
-- 🌐 **Service Graph** - Service dependencies and health visualization
+---
 
-## Getting Started
+## Debugging Scenarios
 
-### Prerequisites
+This codebase contains bugs for two production debugging scenarios. Your task is to investigate the issues using the observability platform and locate the problematic code in this repository.
 
-- Node.js 18+ 
-- npm or yarn
+### Scenario 1: System Unresponsiveness - Hourly Pattern
 
-### Installation
+**Symptoms:** The entire platform becomes unresponsive every hour on the hour. API requests time out and workflows fail to start. Happens at 12:00, 13:00, 14:00, etc., lasting 2-3 minutes each time.
+
+**Your task:** Use the observability tools to identify the root cause and locate the buggy code.
+
+---
+
+### Scenario 2: API Timeout Cascade
+
+**Symptoms:** Multiple API endpoints are timing out. Users see 'Request timeout' or 'Database unavailable' errors. Database CPU and disk are normal, but connection pool shows 100% utilization.
+
+**Your task:** Use the observability tools to identify the root cause and locate the buggy code.
+
+---
+
+## Architecture Overview
+
+This is a realistic production application with the following components:
+
+### API Layer (`src/api/`)
+- Express-based REST API
+- Authentication, validation, error handling middleware
+- Routes for workflows, users, data operations, reports
+
+### Services Layer (`src/services/`)
+- **Job Scheduler**: Background job scheduling and execution
+- **Workflow Engine**: Workflow state machine and step execution
+- **Notification Service**: Email, webhook, and push notifications
+- **User Service**: User management and permissions
+- **Data Service**: Data import/export/transformation
+
+### Infrastructure (`src/lib/`)
+- Database client with connection pooling
+- Redis-backed caching
+- Structured JSON logging
+- Metrics collection (counters, gauges, histograms)
+- External API clients
+
+---
+
+## Key Features
+
+### Database Connection Pool
+- 200 connections max (configurable)
+- Connection timeout: 10 seconds
+- Tracks connection state: active, idle, idle_in_transaction
+- Queue management for waiting requests
+
+### Transaction Management
+- Prisma-style transaction API
+- Timeout support
+- Transaction duration tracking
+- Long-running transaction warnings
+
+### Background Jobs
+- Job scheduling with cron-like timing
+- Multiple job types: data-sync, email, reports, cleanup
+- Retry logic with exponential backoff
+- Job queue management
+
+### Observability
+- Structured JSON logging
+- Metrics: counters, gauges, histograms
+- Request tracing with trace IDs
+- Connection pool metrics
+- Job execution metrics
+
+---
+
+## Installation & Setup
 
 ```bash
+# Install dependencies
 npm install
-# or
-yarn install
-```
 
-### Development
+# Configure environment (optional)
+cp .env.example .env
 
-```bash
-npm run dev
-# or
-yarn dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) to view the platform.
-
-### Building for Production
-
-```bash
-npm run build
-npm run start
-# or
-yarn build
-yarn start
-```
-
-## Deployment
-
-### Deploy to Vercel
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/observability-platform)
-
-1. Click the "Deploy to Vercel" button above
-2. Connect your GitHub account
-3. Vercel will automatically build and deploy
-4. Share the URL with interview candidates
-
-### Manual Deployment
-
-```bash
-# Build the project
+# Build TypeScript
 npm run build
 
-# Deploy the .next folder to your hosting provider
-# The app is a static/serverless Next.js application
+# Run tests
+npm test
 ```
 
-## Project Structure
+---
 
-```
-observability-platform/
-├── app/                      # Next.js 14 App Router pages
-│   ├── page.tsx             # Home page with scenario selector
-│   ├── scenario-1/          # Webhook Retry Storm
-│   └── scenario-2/          # JSON Parsing Performance
-├── components/
-│   ├── ScenarioLayout.tsx   # Shared layout for scenarios
-│   └── tools/               # Observability tool components
-│       ├── MetricsChart.tsx
-│       ├── TraceViewer.tsx
-│       ├── LogViewer.tsx
-│       ├── DatabaseAnalyzer.tsx
-│       └── ServiceGraph.tsx
-├── data/                    # Pre-generated observability data
-│   ├── scenario-1/
-│   └── scenario-2/
-└── lib/                     # Utilities and types
-```
+## For Interview Candidates
+
+**DO NOT modify this code.** Your task is to:
+
+1. **Investigate** the observability data (metrics, traces, logs, database analyzer)
+2. **Identify** the root cause using systematic investigation
+3. **Locate** the buggy code in this repository
+4. **Explain** what's wrong and why it causes the observed symptoms
+5. **Propose** fixes and architectural improvements
+
+---
 
 ## For Interviewers
 
-### Interview Flow
+### Scenario Setup
 
-1. Send the deployed URL to candidates 24 hours before the interview
-2. During the interview (45 minutes):
-   - Introduction (5 min)
-   - Scenario 1 (18 min)
-   - Scenario 2 (18 min)
-   - Wrap-up discussion (9 min)
+1. **Observability Platform**: Candidates use `/observability-platform` to view metrics, traces, logs
+2. **Code Repository**: This repository contains the application code (read-only)
+3. **Time Limit**: 15-18 minutes per scenario
+4. **Deliverables**: 
+   - Root cause explanation
+   - Code location(s)
+   - Proposed fixes
+   - Discussion of prevention
 
 ### Evaluation Criteria
 
-- **Systematic Approach**: Do they have a debugging methodology?
-- **Tool Usage**: Can they effectively use observability tools?
-- **Correlation**: Can they connect data across different tools?
-- **Root Cause Analysis**: Do they identify the actual bug vs symptoms?
-- **Solution Design**: Can they propose comprehensive fixes?
+**Minimum (Pass):**
+- Identifies symptoms correctly
+- Forms reasonable hypothesis
+- Finds relevant code
+- Explains basic problem
 
-See the `interview-app` repository for detailed solutions and interviewer guides.
+**Strong (High Pass):**
+- Systematic investigation through all tools
+- Identifies exact bug location(s)
+- Proposes specific fixes
+- Discusses architectural improvements
 
-## Data Generation
+**Exceptional:**
+- Efficient investigation (<10 minutes)
+- Finds multiple contributing factors
+- Comprehensive solution with trade-offs
+- Discusses prevention and monitoring
 
-All observability data is pre-generated and stored in JSON files in the `data/` directory. This ensures:
+---
 
-- Consistent interview experience
-- No need for running backend services
-- Fast loading times
-- Easy deployment
+## Code Quality Notes
 
-## Customization
+This is realistic production code with:
+- ✅ Proper TypeScript typing
+- ✅ Error handling
+- ✅ Logging and metrics
+- ✅ Configuration management
+- ✅ Layered architecture
+- ⚠️ Intentional bugs for debugging scenarios
 
-### Adding New Scenarios
+The bugs are realistic issues that could occur in production systems due to:
+- Missing edge case handling
+- Architectural anti-patterns
+- Performance oversight
+- Concurrency issues
 
-1. Create a new directory in `app/scenario-X/`
-2. Add data files in `data/scenario-X/`
-3. Create a page component using `ScenarioLayout`
-4. Update the home page to include the new scenario
+---
 
-### Modifying Data
+## Technology Stack
 
-Edit the JSON files in `data/scenario-X/` to adjust:
-- Metric values and trends
-- Trace timings and tags
-- Log messages and frequencies
-- Heap dump snapshots
+- **Language**: TypeScript 5.3+
+- **Runtime**: Node.js 20+
+- **Database**: PostgreSQL (simulated)
+- **Cache**: Redis (simulated)
+- **API**: Express.js
+- **Logging**: Structured JSON
+- **Metrics**: Custom collector (Prometheus-style)
 
-## Tech Stack
-
-- **Framework**: Next.js 14 with App Router
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Charts**: Recharts
-- **Icons**: Lucide React
+---
 
 ## License
 
-MIT License - feel free to use this for your own interviews!
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Questions?
-
-For questions about using this in interviews, see the `interview-app` repository or open an issue.
-
-
+This code is for interview purposes only. Not for production use.
