@@ -44,7 +44,7 @@ interview-app/
 │   │       └── reports/          # Report generation
 │   │
 │   └── services/                 # Backend services
-│       ├── job-scheduler/        # Background job scheduling ⚠️
+│       ├── job-scheduler/        # Background job scheduling
 │       ├── workflow-engine/      # Workflow execution
 │       ├── workflow-service/     # Workflow operations
 │       ├── notification-service/ # Email/webhook notifications
